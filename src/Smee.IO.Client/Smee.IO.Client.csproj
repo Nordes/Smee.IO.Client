@@ -1,11 +1,38 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Authors>Nordes Menard-Lamarre</Authors>
+    <Company>HoNoSoFt</Company>
+    <Version>0.0.1</Version>
+    <Description>Smee.IO Client which connect to the EventSource using streaming.</Description>
+    <Copyright>Copyright 2019 - Nordes Menard-Lamarre</Copyright>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/Nordes/Smee.IO.Client</PackageProjectUrl>
+    <PackageIconUrl>https://www.honosoft.com/img/logo.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/Nordes/Smee.IO.Client</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Smee, Smee.io, Client, EventSource</PackageTags>
+    <PackageReleaseNotes>Client built for Dotnet in order to connect to a Smee.IO server (local or internet). Smee.IO act as a middleman in order to receive request and then emit a server side event (SSE) using EventSource. This client do the pulling of the streaming data and give to the developer a more easy way to interact from Dotnet. 
+
+This can run in console, webapi, mvc or any other type of project.</PackageReleaseNotes>
+    <NeutralLanguage/>
+    <FileVersion>1.0.0.0</FileVersion>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
