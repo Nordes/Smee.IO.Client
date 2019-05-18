@@ -8,8 +8,40 @@ More details on the official project can be found at https://github.com/probot/s
 ## How to use the client
 It is really simple, you simply have to connect to the Smee URL and then attach your listeners. Since [Smee.IO](https://smee.io) uses EventSources sent through HTTP Streaming, the site or server, currently push the notifications. This work in a similar way as the WebSocket except without a TCP socket.
 
-### Code Sample
+### Code Sample 
 
+#### Web Application
+Within a Web Application, I recommend you to use the `BackgroundService` Host Service in order to receive the requests. This will create a service running beind the scene and then it will trigger action within your application. The code will be shortened since it will duplicate the console code.
+
+```csharp
+public class WatchMySmee : BackgroundService
+{
+    private readonly ILogger<WatchMySmee> _logger;
+
+    public WatchMySmee(ILogger<WatchMySmee> logger) {
+        _logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
+        _logger.LogWarning("Start my smee");
+        var smeeCli = new SmeeClient(new Uri("https://smee.io/bbD7RyIMjQ2LCV9"));
+
+        smeeCli.OnConnect += (sender, args) => _logger.LogInformation("Connected to SMEE.io");
+        smeeCli.OnMessage += (sender, smeeEvent) => {
+            _logger.LogInformation($"Message: {JsonConvert.SerializeObject(smeeEvent)}")
+        };
+        //////////////////////////////////////////
+        // See Console application for other events
+        //////////////////////////////////////////
+        smeeCli.Start(stoppingToken); // Token is optional here
+        await Task.Delay(-1, stoppingToken);
+    }
+    
+    // etc.
+}
+```
+
+#### Console Application
 ```csharp
 var smeeUri = new Uri("https://smee.io/bbD7RyIMjQ2LCV9"); // Random URI
 var smeeCli = new SmeeClient(smeeUri);
@@ -27,7 +59,7 @@ smeeCli.OnMessage += (sender, smeeEvent) =>
 };
 smeeCli.OnPing += (sender, a) => Console.WriteLine("Ping from Smee");
 smeeCli.OnError += (sender, e) => Console.WriteLine("Error was raised (Disconnect/Anything else: " + e.Message);
-smeeCli.Start(token);
+smeeCli.Start(token); // Token is optional here
 ```
 
 ## Events
