@@ -1,3 +1,7 @@
+![License](https://img.shields.io/github/license/Nordes/Smee.IO.Client.svg)
+[![Build status](https://ci.appveyor.com/api/projects/status/m63s6b2188b20bkc/branch/master?svg=true)](https://ci.appveyor.com/project/Nordes/Smee.IO.Client/branch/master)
+[![NuGet](https://img.shields.io/nuget/v/Smee.IO.Client.svg)](https://www.nuget.org/packages/Smee.IO.Client/)
+
 # Smee.IO.Client
 [Smee.IO](https://smee.io/) Client library implementation for Dotnet. 
 
