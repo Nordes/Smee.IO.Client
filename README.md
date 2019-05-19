@@ -37,8 +37,7 @@ public class WatchMySmee : BackgroundService
         //////////////////////////////////////////
         // See Console application for other events
         //////////////////////////////////////////
-        smeeCli.Start(stoppingToken); // Token is optional here
-        await Task.Delay(-1, stoppingToken);
+        await smeeCli.StartAsync(stoppingToken); // Token is optional here
     }
     
     // etc.
@@ -63,7 +62,15 @@ smeeCli.OnMessage += (sender, smeeEvent) =>
 };
 smeeCli.OnPing += (sender, a) => Console.WriteLine("Ping from Smee");
 smeeCli.OnError += (sender, e) => Console.WriteLine("Error was raised (Disconnect/Anything else: " + e.Message);
-smeeCli.Start(token); // Token is optional here
+
+// Ctrl-c from a main/console will be caught to cancel the event.
+Console.CancelKeyPress += (sender, eventArgs) =>
+    {
+        source.Cancel();
+        eventArgs.Cancel = true;
+    };
+
+await smeeCli.StartAsync(token); // Token is optional here
 ```
 
 ## Events
@@ -82,6 +89,12 @@ The demo project is included in this repository, simply navigate to the src fold
 
 ## Contributor(s)
 > None at the moment.
+
+## References
+Some documentation about the SSE (Server Side Events) can be found at : 
+ 
+* https://hpbn.co/server-sent-events-sse/
+* https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format
 
 ## License
 MIT

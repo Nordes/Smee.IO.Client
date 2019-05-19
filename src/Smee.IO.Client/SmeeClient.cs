@@ -16,10 +16,7 @@ namespace Smee.IO.Client
         private CancellationToken _cancellationToken;
         private bool _started;
         private Stream _smeeStream;
-
-        // Some documentation can be found at : 
-        // https://hpbn.co/server-sent-events-sse/
-        // https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format
+        private CancellationTokenSource _cancellationTokenSource;
 
         /// <summary>
         /// Create a new client targeting a specific EventSource
@@ -36,12 +33,13 @@ namespace Smee.IO.Client
         public event EventHandler<Exception> OnError;
         public event EventHandler<SmeeEvent> OnMessage;
 
-        public void Start()
+        public Task StartAsync()
         {
-            Start(CancellationToken.None);
+            _cancellationTokenSource = new CancellationTokenSource();
+            return StartAsync(_cancellationTokenSource.Token);
         }
 
-        public void Start(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
             if (_started)
             {
@@ -50,17 +48,15 @@ namespace Smee.IO.Client
 
             _cancellationToken = cancellationToken;
             _started = true;
-#pragma warning disable 4014
-            StartStreamingAsync(); // Fire and forget about it.
-#pragma warning restore 4014
+            await StartStreamingAsync(); // Fire and forget about it.
         }
 
         public void Stop()
         {
             if (_started)
             {
-                _smeeStream.Close();
-                _smeeStream.Dispose();
+                _cancellationTokenSource?.Cancel();
+                _cancellationTokenSource = null;
                 OnDisconnect?.Invoke(this, EventArgs.Empty);
             }
             _started = false;
@@ -94,9 +90,10 @@ namespace Smee.IO.Client
             var streamReader = new StreamReader(_smeeStream, Encoding.UTF8);
             var sb = new StringBuilder();
 
-            while (_started && !_cancellationToken.IsCancellationRequested)
+            _cancellationToken.Register(() => streamReader.Close());
+
+            while (_started)
             {
-                // TODO: The ReadLineAsync does not get cancelled. To ensure such a behavior we need to change this code.
                 var line = await streamReader.ReadLineAsync().ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(line))
                 {
@@ -107,9 +104,8 @@ namespace Smee.IO.Client
                 }
                 else
                 {
-#pragma warning disable 4014
-                    // Trigger and forget
-                    var rawSmeeEvent = sb.ToString().Substring(0, sb.Length - 1);
+                    var rawSmeeEvent = sb.ToString();
+#pragma warning disable 4014 // Trigger and forget
                     Task.Run(() => ProcessRequest(rawSmeeEvent), _cancellationToken);
 #pragma warning restore 4014
                     sb = new StringBuilder();
@@ -119,9 +115,9 @@ namespace Smee.IO.Client
 
         private void ProcessRequest(string rawSmeeEvent)
         {
-            var eventRegEx = new Regex("^(.*event: )(.*)(,.*)$", RegexOptions.Multiline | RegexOptions.IgnoreCase);
-            rawSmeeEvent = eventRegEx.Replace(rawSmeeEvent, "$1\"$2\"$3");
-            var smeeEvent = JsonConvert.DeserializeObject<SmeeEvent>("{" + rawSmeeEvent + "}");
+            var eventRegEx = new Regex("^(.*event: )(.*?)(,.*)$", RegexOptions.Multiline | RegexOptions.IgnoreCase);
+            var jsonSmeeEvent = eventRegEx.Replace(rawSmeeEvent, "$1\"$2\"$3");
+            var smeeEvent = JsonConvert.DeserializeObject<SmeeEvent>("{" + jsonSmeeEvent + "}");
             switch (smeeEvent.Event)
             {
                 case SmeeEventType.Message:
