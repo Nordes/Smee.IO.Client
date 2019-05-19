@@ -59,6 +59,7 @@ namespace Smee.IO.Client
                 _cancellationTokenSource = null;
                 OnDisconnect?.Invoke(this, EventArgs.Empty);
             }
+
             _started = false;
             _cancellationToken = CancellationToken.None;
         }
