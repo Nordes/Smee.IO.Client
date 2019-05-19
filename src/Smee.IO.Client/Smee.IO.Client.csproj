@@ -4,7 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <LangVersion>7.1</LangVersion>
     <Authors>Nordes Menard-Lamarre</Authors>
     <Company>HoNoSoFt</Company>
     <Version>0.0.1</Version>
