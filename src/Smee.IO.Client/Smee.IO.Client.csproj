@@ -18,7 +18,7 @@
     <PackageReleaseNotes>Client built for Dotnet in order to connect to a Smee.IO server (local or internet). Smee.IO act as a middleman in order to receive request and then emit a server side event (SSE) using EventSource. This client do the pulling of the streaming data and give to the developer a more easy way to interact from Dotnet. 
 
 This can run in console, webapi, mvc or any other type of project.</PackageReleaseNotes>
-    <NeutralLanguage/>
+    <NeutralLanguage />
     <FileVersion>1.0.0.0</FileVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>true</IncludeSource>

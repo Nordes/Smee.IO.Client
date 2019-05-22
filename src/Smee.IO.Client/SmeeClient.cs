@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Smee.IO.Client.Exceptions;
 
 namespace Smee.IO.Client
 {
@@ -13,16 +14,15 @@ namespace Smee.IO.Client
     {
         private readonly Uri _eventSourceChannel;
 
-        private CancellationToken _cancellationToken;
         private bool _started;
-        private Stream _smeeStream;
+        private CancellationToken _cancellationToken;
         private CancellationTokenSource _cancellationTokenSource;
 
         /// <summary>
         /// Create a new client targeting a specific EventSource
         /// </summary>
         /// <param name="eventSourceChannel">URI to the event source channel</param>
-        public SmeeClient(Uri eventSourceChannel) // Add the http factory
+        public SmeeClient(Uri eventSourceChannel)
         {
             _eventSourceChannel = eventSourceChannel;
         }
@@ -31,7 +31,7 @@ namespace Smee.IO.Client
         public event EventHandler OnPing;
         public event EventHandler OnDisconnect;
         public event EventHandler<Exception> OnError;
-        public event EventHandler<SmeeEvent> OnMessage;
+        public event EventHandler<Dto.SmeeEvent> OnMessage;
 
         public Task StartAsync()
         {
@@ -74,9 +74,9 @@ namespace Smee.IO.Client
                     smeeChannelRequest.AllowReadStreamBuffering = false;
                     smeeChannelRequest.Accept = "text/event-stream";
                     var smeeChannelResponse = await smeeChannelRequest.GetResponseAsync().ConfigureAwait(false);
-                    _smeeStream = smeeChannelResponse.GetResponseStream();
+                    var smeeStream = smeeChannelResponse.GetResponseStream();
 
-                    await ReadChannelStreamAsync().ConfigureAwait(false);
+                    await ReadChannelStreamAsync(smeeStream).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -86,9 +86,9 @@ namespace Smee.IO.Client
             }
         }
 
-        private async Task ReadChannelStreamAsync()
+        private async Task ReadChannelStreamAsync(Stream smeeStream)
         {
-            var streamReader = new StreamReader(_smeeStream, Encoding.UTF8);
+            var streamReader = new StreamReader(smeeStream, Encoding.UTF8);
             var sb = new StringBuilder();
 
             _cancellationToken.Register(() => streamReader.Close());
@@ -118,11 +118,14 @@ namespace Smee.IO.Client
         {
             var eventRegEx = new Regex("^(.*event: )(.*?)(,.*)$", RegexOptions.Multiline | RegexOptions.IgnoreCase);
             var jsonSmeeEvent = eventRegEx.Replace(rawSmeeEvent, "$1\"$2\"$3");
-            var smeeEvent = JsonConvert.DeserializeObject<SmeeEvent>("{" + jsonSmeeEvent + "}");
+            var smeeEvent = JsonConvert.DeserializeObject<Models.SmeeEvent>("{" + jsonSmeeEvent + "}");
+
             switch (smeeEvent.Event)
             {
                 case SmeeEventType.Message:
-                    OnMessage?.Invoke(this, smeeEvent);
+                    // Convert to Dto (Could use AutoMapper, but it would add a dependency.
+                    var dtoSmeeEvent = new Dto.SmeeEvent(smeeEvent);
+                    OnMessage?.Invoke(this, dtoSmeeEvent);
                     break;
                 case SmeeEventType.Ping:
                     OnPing?.Invoke(this, EventArgs.Empty);

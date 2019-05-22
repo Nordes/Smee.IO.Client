@@ -1,13 +1,13 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Smee.IO.Client
+namespace Smee.IO.Client.Models
 {
   /// <summary>
   /// Detailed in
   /// https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format
   /// </summary>
-  public class SmeeEvent
+  internal class SmeeEvent
     {
         /// <summary>
         /// The event ID to set the EventSource object's last event ID value.

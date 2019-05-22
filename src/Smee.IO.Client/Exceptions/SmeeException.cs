@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Smee.IO.Client
+namespace Smee.IO.Client.Exceptions
 {
     public class SmeeException : Exception
     {

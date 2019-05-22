@@ -10,7 +10,7 @@ namespace Smee.IO.Client
         event EventHandler OnPing;
         event EventHandler OnDisconnect;
         event EventHandler<Exception> OnError;
-        event EventHandler<SmeeEvent> OnMessage;
+        event EventHandler<Dto.SmeeEvent> OnMessage;
 
         Task StartAsync();
         Task StartAsync(CancellationToken cancellationToken);
